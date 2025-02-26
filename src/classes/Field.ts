@@ -1,8 +1,8 @@
 import { Random } from "../utils/Random";
-import Cell from "./Cell";
+import Mine from "./Mine";
 
 export default class Field {
-  grid: Cell[][];
+  grid: Mine[][];
   width: number;
   height: number;
   mines: number;
@@ -16,10 +16,10 @@ export default class Field {
     const coordinates = [];
 
     for (let i = 0; i < height; i++) {
-      const row: Cell[] = [];
+      const row: Mine[] = [];
 
       for (let j = 0; j < width; j++) {
-        row.push(new Cell());
+        row.push(new Mine(j, i, this));
         coordinates.push([j, i]);
       }
 
@@ -31,7 +31,7 @@ export default class Field {
       const cell = this.at(x, y);
       if (!cell) continue;
       cell.type = "MINE";
-      this.arround(x, y, Cell.prototype.increment);
+      this.arround(x, y, Mine.prototype.increment);
     }
   }
 
@@ -49,13 +49,13 @@ export default class Field {
     return this.atBounds(point, "height");
   }
 
-  at(x: number, y: number): Cell | undefined {
+  at(x: number, y: number): Mine | undefined {
     if (!this.atWidthBounds(x) || !this.atHeightBounds(y)) return;
     const cell = this.grid[y][x];
     return cell;
   }
 
-  arround(x: number, y: number, callback: (this: Cell) => void) {
+  arround(x: number, y: number, callback: (this: Mine) => void) {
     for (let i = -1; i <= 1; i++) {
       for (let j = -1; j <= 1; j++) {
         if (i === y && j === x) continue;
