@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import Mine from "../classes/Mine";
 import { useMineField } from "./Minefield";
 
@@ -22,51 +22,49 @@ const COLORS = [
 
 export default function Tile({ mine, x, y }: ITileProps) {
   const { set } = useMineField();
+  const { opened, flagged, value, type, field } = mine;
+  const { gameover } = field;
 
   const display = useMemo(() => {
-    if (mine.flagged) return "🚩";
-    if (!mine.opened) return "";
-    if (mine.type === "MINE") return "💣";
-    if (mine.value === 0) return "";
+    if (flagged) return "🚩";
+    if (!opened) return "";
+    if (type === "MINE") return "💣";
+    if (value === 0) return "";
     return (
-      <span style={{ color: COLORS[mine.value], fontWeight: 700 }}>
-        {mine.value}
-      </span>
+      <span style={{ color: COLORS[value], fontWeight: 700 }}>{value}</span>
     );
-  }, [mine.flagged, mine.opened]);
+  }, [flagged, opened]);
 
   const className = useMemo(() => {
-    return "mine-tile " + (mine.opened ? "open" : "closed");
-  }, [mine.opened]);
+    return "mine-tile " + (opened ? "open" : "closed");
+  }, [opened]);
 
   const onClick = useCallback(
-    (e: React.MouseEvent) => {
+    function openTile(e: React.MouseEvent) {
       e.stopPropagation();
       e.preventDefault();
-      if (mine.flagged) return;
+      if (flagged) return;
+      if (!field.initialized) field.initialize(x, y);
       set(x, y, mine.flood);
     },
-    [mine.flagged, mine.opened]
+    [flagged, opened]
   );
 
   const onContextMenu = useCallback(
-    (e: React.MouseEvent) => {
+    function flagTile(e: React.MouseEvent) {
       e.stopPropagation();
       e.preventDefault();
 
-      console.log(e.button);
-
-      if (e.button != 2) return;
-
-      if (mine.opened) return;
+      if (opened) return;
 
       set(x, y, mine.flag);
     },
-    [mine.opened]
+    [opened]
   );
 
   return (
     <button
+      disabled={gameover}
       onContextMenu={onContextMenu}
       onClick={onClick}
       className={className}

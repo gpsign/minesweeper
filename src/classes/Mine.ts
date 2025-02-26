@@ -18,7 +18,7 @@ export default class Mine {
   }
 
   flag() {
-    this.flagged = true;
+    this.flagged = !this.flagged;
   }
 
   open() {
@@ -30,7 +30,7 @@ export default class Mine {
   }
 
   flood() {
-    if (this.opened) return;
+    if (this.opened || this.flagged) return;
 
     this.open();
 

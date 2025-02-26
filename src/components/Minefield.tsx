@@ -45,9 +45,15 @@ export default function Minefield({ width, height, mines }: IMinefieldProps) {
 
       const newField = new Field(width, height, mines);
 
+      if (mine.type === "MINE") {
+        newField.gameover = true;
+        alert("BOOM! 💣");
+      }
+
       newField.grid = field.grid.map((line, fy) =>
         line.map((mine, fx) => {
           if (fx === x && fy === y) callback.apply(mine);
+          mine.field = newField;
           return mine;
         })
       );
