@@ -3,12 +3,11 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useRef,
   useState,
 } from "react";
 import Field from "../classes/Field";
-import Tile from "./Tile";
 import Mine from "../classes/Mine";
+import Tile from "./Tile";
 
 interface IMinefieldProps {
   width: number;
