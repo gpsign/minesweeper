@@ -1,10 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import Field from "../classes/Field";
 import Mine from "../classes/Mine";
 import Tile from "./Tile";
@@ -23,6 +17,8 @@ type SetMineFunction = (
 
 interface IFieldContext {
   set: SetMineFunction;
+  gameover: boolean;
+  endGame: VoidFunction;
 }
 
 const FieldContext = createContext<IFieldContext | null>(null);
@@ -36,31 +32,17 @@ export function useMineField() {
 
 export default function Minefield({ width, height, mines }: IMinefieldProps) {
   const [field, setField] = useState(new Field(width, height, mines));
+  const [gameover, setGameover] = useState(false);
 
-  const set: SetMineFunction = useCallback(
-    (x, y, callback) => {
-      const mine = field.at(x, y);
-      if (!mine) return;
+  const set: SetMineFunction = (x, y, callback) => {
+    const newField = new Field(field);
+    const mine = newField.at(x, y);
+    if (!mine) return;
 
-      const newField = new Field(width, height, mines);
+    callback.apply(mine);
 
-      if (mine.type === "MINE") {
-        newField.gameover = true;
-        alert("BOOM! 💣");
-      }
-
-      newField.grid = field.grid.map((line, fy) =>
-        line.map((mine, fx) => {
-          if (fx === x && fy === y) callback.apply(mine);
-          mine.field = newField;
-          return mine;
-        })
-      );
-
-      setField(newField);
-    },
-    [field, setField]
-  );
+    setField(newField);
+  };
 
   const style = useMemo(
     function generateTemplates() {
@@ -72,8 +54,18 @@ export default function Minefield({ width, height, mines }: IMinefieldProps) {
     [width, height]
   );
 
+  const endGame = () => setGameover(true);
+
+  useEffect(
+    function gameoverAlert() {
+      if (!gameover) return;
+      alert("BOOM! 💣");
+    },
+    [gameover]
+  );
+
   return (
-    <FieldContext.Provider value={{ set }}>
+    <FieldContext.Provider value={{ set, gameover, endGame }}>
       <div className="minefield" style={style}>
         {field.grid.map((line, y) =>
           line.map((mine, x) => <Tile key={mine.id} mine={mine} x={x} y={y} />)

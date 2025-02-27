@@ -17,6 +17,18 @@ export default class Mine {
     this.field = field;
   }
 
+  isMine() {
+    return this.type === "MINE";
+  }
+
+  isOpen() {
+    return this.opened;
+  }
+
+  isFlagged() {
+    return this.flagged;
+  }
+
   flag() {
     this.flagged = !this.flagged;
   }
@@ -30,7 +42,7 @@ export default class Mine {
   }
 
   flood() {
-    if (this.opened || this.flagged) return;
+    if (this.isOpen() || this.isFlagged() || this.isMine()) return;
 
     this.open();
 

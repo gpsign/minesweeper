@@ -3,6 +3,10 @@ import Mine from "./Mine";
 
 type Position = [number, number];
 
+type FieldCopyConstructor = [Field];
+type FieldExplicitConstructor = [number, number, number];
+type FieldConstructor = FieldCopyConstructor | FieldExplicitConstructor;
+
 export default class Field {
   grid: Mine[][];
   width: number;
@@ -11,26 +15,40 @@ export default class Field {
   safeX: number;
   safeY: number;
   initialized: boolean = false;
-  gameover: boolean = false;
   private available: Position[] = [];
 
-  constructor(width: number, height: number, mines: number) {
-    this.grid = [];
-    this.width = width;
-    this.height = height;
-    this.mines = mines;
-    this.safeX = Math.floor(width / 2);
-    this.safeY = Math.floor(height / 2);
+  constructor(field: Field);
+  constructor(width: number, height: number, mines: number);
+  constructor(...args: FieldConstructor) {
+    const field = args[0];
 
-    for (let y = 0; y < height; y++) {
-      const row: Mine[] = [];
-
-      for (let x = 0; x < width; x++) {
-        row.push(new Mine(x, y, this));
-      }
-
-      this.grid.push(row);
+    if (this.isField(field)) {
+      Object.assign(this, { ...field });
     }
+
+    const [width, height, mines] = args as FieldExplicitConstructor;
+
+    this.grid ??= [];
+    this.width ??= width;
+    this.height ??= height;
+    this.mines ??= mines;
+    this.safeX ??= Math.floor(width / 2);
+    this.safeY ??= Math.floor(height / 2);
+
+    if (this.grid.length === 0)
+      for (let y = 0; y < height; y++) {
+        const row: Mine[] = [];
+
+        for (let x = 0; x < width; x++) {
+          row.push(new Mine(x, y, this));
+        }
+
+        this.grid.push(row);
+      }
+  }
+
+  private isField(value: unknown): value is Field {
+    return value instanceof Field;
   }
 
   private isSafe(x: number, y: number) {

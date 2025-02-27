@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import Mine from "../classes/Mine";
 import { useMineField } from "./Minefield";
 
@@ -21,9 +21,8 @@ const COLORS = [
 ];
 
 export default function Tile({ mine, x, y }: ITileProps) {
-  const { set } = useMineField();
+  const { set, gameover, endGame } = useMineField();
   const { opened, flagged, value, type, field } = mine;
-  const { gameover } = field;
 
   const display = useMemo(() => {
     if (flagged) return "🚩";
@@ -39,28 +38,28 @@ export default function Tile({ mine, x, y }: ITileProps) {
     return "mine-tile " + (opened ? "open" : "closed");
   }, [opened]);
 
-  const onClick = useCallback(
-    function openTile(e: React.MouseEvent) {
-      e.stopPropagation();
-      e.preventDefault();
-      if (flagged) return;
-      if (!field.initialized) field.initialize(x, y);
-      set(x, y, mine.flood);
-    },
-    [flagged, opened]
-  );
+  const onClick = function openTile(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (flagged) return;
+    if (!field.initialized) field.initialize(x, y);
 
-  const onContextMenu = useCallback(
-    function flagTile(e: React.MouseEvent) {
-      e.stopPropagation();
-      e.preventDefault();
+    if (type === "MINE") {
+      mine.open();
+      endGame();
+    }
 
-      if (opened) return;
+    set(x, y, mine.flood);
+  };
 
-      set(x, y, mine.flag);
-    },
-    [opened]
-  );
+  const onContextMenu = function flagTile(e: React.MouseEvent) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (opened) return;
+
+    set(x, y, mine.flag);
+  };
 
   return (
     <button
