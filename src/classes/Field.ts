@@ -54,10 +54,10 @@ export default class Field {
   private isSafe(x: number, y: number) {
     if (!this.atWidthBounds(x) || !this.atHeightBounds(y)) return false;
 
-    if (x >= this.safeX - 1 && x <= this.safeX + 1) return false;
-    if (y >= this.safeY - 1 && y <= this.safeY + 1) return false;
+    const nearX = Boolean(x >= this.safeX - 1 && x <= this.safeX + 1);
+    const nearY = Boolean(y >= this.safeY - 1 && y <= this.safeY + 1);
 
-    return true;
+    return !(nearX && nearY);
   }
 
   private placeMines() {

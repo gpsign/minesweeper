@@ -1,9 +1,9 @@
 import "./App.css";
 import Minefield from "./components/Minefield";
 
-const WIDTH = 10;
-const HEIGHT = 10;
-const MINES = 10;
+const WIDTH = 16;
+const HEIGHT = 30;
+const MINES = 99;
 
 function App() {
   return (
