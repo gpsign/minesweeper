@@ -2,15 +2,14 @@ import {
   createContext,
   useContext,
   useEffect,
-  useId,
   useMemo,
   useRef,
   useState,
 } from "react";
 import Field from "../classes/Field";
 import Mine from "../classes/Mine";
-import Tile from "./Tile";
 import { Random } from "../utils/Random";
+import Tile from "./Tile";
 
 interface IMinefieldProps {
   width: number;

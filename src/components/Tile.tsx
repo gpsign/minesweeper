@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { useMemo } from "react";
 import Mine, { Status } from "../classes/Mine";
 import { useMine, useMineField } from "./Minefield";
 
