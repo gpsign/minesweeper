@@ -1,9 +1,9 @@
-import { useMemo } from "react";
-import Mine from "../classes/Mine";
-import { useMineField } from "./Minefield";
+import { memo, useMemo } from "react";
+import Mine, { Status } from "../classes/Mine";
+import { useMine, useMineField } from "./Minefield";
 
 interface ITileProps {
-  mine: Mine;
+  status: Mine["status"];
   x: number;
   y: number;
 }
@@ -20,19 +20,27 @@ const COLORS = [
   "black",
 ];
 
-export default function Tile({ mine, x, y }: ITileProps) {
+export default function Tile({ x, y }: ITileProps) {
   const { set, gameover, endGame } = useMineField();
-  const { opened, flagged, value, type, field } = mine;
+
+  const mine = useMine(x, y);
+  const status = mine.status;
+
+  const flagged = status === Status.flagged;
+  const opened = status === Status.open;
+  const isMine = mine.isMine;
 
   const display = useMemo(() => {
     if (flagged) return "🚩";
     if (!opened) return "";
-    if (type === "MINE") return "💣";
-    if (value === 0) return "";
+    if (isMine) return "💣";
+    if (mine.value === 0) return "";
     return (
-      <span style={{ color: COLORS[value], fontWeight: 700 }}>{value}</span>
+      <span style={{ color: COLORS[mine.value], fontWeight: 700 }}>
+        {mine.value}
+      </span>
     );
-  }, [flagged, opened]);
+  }, [status]);
 
   const className = useMemo(() => {
     return "mine-tile " + (opened ? "open" : "closed");
@@ -42,14 +50,14 @@ export default function Tile({ mine, x, y }: ITileProps) {
     e.stopPropagation();
     e.preventDefault();
     if (flagged) return;
-    if (!field.initialized) field.initialize(x, y);
+    if (!mine.field.initialized) mine.field.initialize(x, y);
 
-    if (type === "MINE") {
+    if (isMine) {
       mine.open();
       endGame();
     }
 
-    set(x, y, mine.flood);
+    set(x, y, mine.reveal);
   };
 
   const onContextMenu = function flagTile(e: React.MouseEvent) {
@@ -63,6 +71,7 @@ export default function Tile({ mine, x, y }: ITileProps) {
 
   return (
     <button
+      key={mine.status}
       disabled={gameover}
       onContextMenu={onContextMenu}
       onClick={onClick}

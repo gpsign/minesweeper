@@ -1,11 +1,15 @@
 import { Random } from "../utils/Random";
 import Field from "./Field";
 
+export enum Status {
+  open,
+  closed,
+  flagged,
+}
 export default class Mine {
   value: number = 0;
-  type: "MINE" | "CLEAR" = "CLEAR";
-  flagged: boolean = false;
-  opened: boolean = false;
+  isMine = false;
+  status = Status.closed;
   id = new Random().uuid();
   x: number;
   y: number;
@@ -17,37 +21,36 @@ export default class Mine {
     this.field = field;
   }
 
-  isMine() {
-    return this.type === "MINE";
-  }
-
   isOpen() {
-    return this.opened;
+    return this.status === Status.open;
   }
 
   isFlagged() {
-    return this.flagged;
+    return this.status === Status.flagged;
   }
 
   flag() {
-    this.flagged = !this.flagged;
+    if (this.isOpen()) return;
+    this.status = this.isFlagged() ? Status.closed : Status.flagged;
   }
 
   open() {
-    this.opened = true;
+    this.status = Status.open;
   }
 
   increment() {
     this.value++;
   }
 
-  flood() {
-    if (this.isOpen() || this.isFlagged() || this.isMine()) return;
+  reveal() {
+    if (this.isOpen() || this.isFlagged() || this.isMine) return;
+
+    this.field.affected.push([this.x, this.y]);
 
     this.open();
 
     if (this.value != 0) return;
 
-    this.field.arround(this.x, this.y, Mine.prototype.flood);
+    this.field.arround(this.x, this.y, Mine.prototype.reveal);
   }
 }

@@ -1,7 +1,16 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Field from "../classes/Field";
 import Mine from "../classes/Mine";
 import Tile from "./Tile";
+import { Random } from "../utils/Random";
 
 interface IMinefieldProps {
   width: number;
@@ -19,6 +28,7 @@ interface IFieldContext {
   set: SetMineFunction;
   gameover: boolean;
   endGame: VoidFunction;
+  field: Field;
 }
 
 const FieldContext = createContext<IFieldContext | null>(null);
@@ -30,29 +40,49 @@ export function useMineField() {
   return context;
 }
 
-export default function Minefield({ width, height, mines }: IMinefieldProps) {
-  const [field, setField] = useState(new Field(width, height, mines));
+const updaters = new Map<string, VoidFunction>();
+
+export function useMine(x: number, y: number) {
+  const [index, setIndex] = useState(0);
+  const { field } = useMineField();
+  const update = () => {
+    setIndex(index + 1);
+    console.log(x, y);
+  };
+
+  update.index = index;
+
+  const mine = field.at(x, y) || new Mine(x, y, field);
+  updaters.set(mine.id, update);
+
+  return mine;
+}
+
+function FieldProvider({
+  width,
+  height,
+  mines,
+  children,
+}: IMinefieldProps & React.PropsWithChildren) {
+  const field = useRef(new Field(width, height, mines)).current;
+
   const [gameover, setGameover] = useState(false);
 
   const set: SetMineFunction = (x, y, callback) => {
-    const newField = new Field(field);
-    const mine = newField.at(x, y);
+    field.affected = [];
+    const mine = field.at(x, y);
     if (!mine) return;
 
     callback.apply(mine);
 
-    setField(newField);
+    for (const [x, y] of field.affected) {
+      const affected = field.at(x, y);
+      if (!affected) continue;
+      const updater = updaters.get(affected.id);
+      if (!updater) continue;
+      updater();
+    }
   };
-
-  const style = useMemo(
-    function generateTemplates() {
-      return {
-        gridTemplateColumns: `repeat(${width}, 50px)`,
-        gridTemplateRows: ` repeat(${height}, 50px)`,
-      };
-    },
-    [width, height]
-  );
 
   const endGame = () => setGameover(true);
 
@@ -65,12 +95,37 @@ export default function Minefield({ width, height, mines }: IMinefieldProps) {
   );
 
   return (
-    <FieldContext.Provider value={{ set, gameover, endGame }}>
-      <div className="minefield" style={style}>
-        {field.grid.map((line, y) =>
-          line.map((mine, x) => <Tile key={mine.id} mine={mine} x={x} y={y} />)
-        )}
-      </div>
+    <FieldContext.Provider value={{ set, gameover, endGame, field }}>
+      {children}
     </FieldContext.Provider>
+  );
+}
+
+export default function Minefield({ width, height, mines }: IMinefieldProps) {
+  const style = useMemo(
+    function generateTemplates() {
+      return {
+        gridTemplateColumns: `repeat(${width}, 50px)`,
+        gridTemplateRows: ` repeat(${height}, 50px)`,
+      };
+    },
+    [width, height]
+  );
+
+  return (
+    <FieldProvider width={width} height={height} mines={mines}>
+      <div className="minefield" style={style}>
+        <FieldGrid />
+      </div>
+    </FieldProvider>
+  );
+}
+
+function FieldGrid() {
+  const { field } = useMineField();
+  return field.grid.map((line, y) =>
+    line.map((mine, x) => (
+      <Tile key={Random.uuid()} status={mine.status} x={x} y={y} />
+    ))
   );
 }

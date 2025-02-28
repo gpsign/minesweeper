@@ -11,6 +11,7 @@ export default class Field {
   grid: Mine[][];
   width: number;
   height: number;
+  affected: Position[] = [];
   mines: number;
   safeX: number;
   safeY: number;
@@ -67,7 +68,7 @@ export default class Field {
       const [x, y] = Random.pop(this.available);
       const cell = this.at(x, y);
       if (!cell) continue;
-      cell.type = "MINE";
+      cell.isMine = true;
       this.arround(x, y, Mine.prototype.increment);
     }
   }
