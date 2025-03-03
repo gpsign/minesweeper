@@ -30,7 +30,7 @@ export default function Tile({ x, y }: ITileProps) {
   const opened = status === Status.open;
   const isMine = mine.isMine;
 
-  const display = useMemo(() => {
+  const display = (() => {
     if (flagged) return "🚩";
     if (!opened) return "";
     if (isMine) return "💣";
@@ -40,7 +40,7 @@ export default function Tile({ x, y }: ITileProps) {
         {mine.value}
       </span>
     );
-  }, [status]);
+  })();
 
   const className = useMemo(() => {
     return "mine-tile " + (opened ? "open" : "closed");
@@ -52,7 +52,7 @@ export default function Tile({ x, y }: ITileProps) {
     if (flagged) return;
     if (!mine.field.initialized) mine.field.initialize(x, y);
 
-    if (isMine) {
+    if (mine.field.at(x, y)?.isMine) {
       mine.open();
       endGame();
     }

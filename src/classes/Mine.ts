@@ -30,8 +30,17 @@ export default class Mine {
   }
 
   flag() {
-    if (this.isOpen()) return;
-    this.status = this.isFlagged() ? Status.closed : Status.flagged;
+    const { status, method } = (
+      this.isFlagged()
+        ? { status: Status.closed, method: "delete" }
+        : { status: Status.flagged, method: "add" }
+    ) as { status: Status; method: "add" | "delete" };
+
+    this.status = status;
+
+    this.field.flagged[method](this.x, this.y);
+
+    this.field.affected.push([this.x, this.y]);
   }
 
   open() {

@@ -46,7 +46,6 @@ export function useMine(x: number, y: number) {
   const { field } = useMineField();
   const update = () => {
     setIndex(index + 1);
-    console.log(x, y);
   };
 
   update.index = index;

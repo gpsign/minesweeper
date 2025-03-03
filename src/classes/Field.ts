@@ -1,5 +1,6 @@
 import { Random } from "../utils/Random";
 import Mine from "./Mine";
+import { PositionSet } from "./PositionSet";
 
 type Position = [number, number];
 
@@ -15,8 +16,10 @@ export default class Field {
   mines: number;
   safeX: number;
   safeY: number;
-  initialized: boolean = false;
+  flagged: PositionSet = new PositionSet();
+
   private available: Position[] = [];
+  private answers: Position[] = [];
 
   constructor(field: Field);
   constructor(width: number, height: number, mines: number);
@@ -70,12 +73,16 @@ export default class Field {
       if (!cell) continue;
       cell.isMine = true;
       this.arround(x, y, Mine.prototype.increment);
+      this.answers.push([x, y]);
     }
+  }
+
+  get initialized() {
+    return this.answers.length != 0;
   }
 
   initialize(safeX?: number, safeY?: number) {
     if (this.initialized) return;
-    this.initialized = true;
 
     this.safeX = safeX ?? this.safeX;
     this.safeY = safeY ?? this.safeY;
@@ -118,5 +125,10 @@ export default class Field {
         callback.apply(cell);
       }
     }
+  }
+
+  checkWin() {
+    if (this.flagged.entries.length !== this.answers.length) return false;
+    return this.answers.every(([x, y]) => this.flagged.has(x, y));
   }
 }
