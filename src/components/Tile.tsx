@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import Mine, { Status } from "../classes/Mine";
+import { Store } from "../classes/Store";
 import { useMine, useMineField } from "./Minefield";
 
 interface ITileProps {
@@ -21,7 +22,7 @@ const COLORS = [
 ];
 
 export default function Tile({ x, y }: ITileProps) {
-  const { set, gameover, endGame } = useMineField();
+  const { set, gameover, endGame, field } = useMineField();
 
   const mine = useMine(x, y);
   const status = mine.status;
@@ -67,6 +68,7 @@ export default function Tile({ x, y }: ITileProps) {
     if (opened) return;
 
     set(x, y, mine.flag);
+    Store.set("counter", field.remaining);
   };
 
   return (

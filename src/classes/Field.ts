@@ -128,7 +128,11 @@ export default class Field {
   }
 
   checkWin() {
-    if (this.flagged.entries.length !== this.answers.length) return false;
+    if (this.flagged.size !== this.answers.length) return false;
     return this.answers.every(([x, y]) => this.flagged.has(x, y));
+  }
+
+  get remaining() {
+    return this.mines - this.flagged.size;
   }
 }

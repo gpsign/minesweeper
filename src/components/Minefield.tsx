@@ -1,14 +1,15 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
+  useTransition,
 } from "react";
 import Field from "../classes/Field";
 import Mine from "../classes/Mine";
 import { Random } from "../utils/Random";
+import Counter from "./Counter";
 import Tile from "./Tile";
 
 interface IMinefieldProps {
@@ -65,6 +66,7 @@ function FieldProvider({
   const field = useRef(new Field(width, height, mines)).current;
 
   const [gameover, setGameover] = useState(false);
+  const [_isPending, startTransition] = useTransition();
 
   const set: SetMineFunction = (x, y, callback) => {
     field.affected = [];
@@ -82,15 +84,10 @@ function FieldProvider({
     }
   };
 
-  const endGame = () => setGameover(true);
-
-  useEffect(
-    function gameoverAlert() {
-      if (!gameover) return;
-      alert("BOOM! 💣");
-    },
-    [gameover]
-  );
+  const endGame = () => {
+    alert("BOOM! 💣");
+    startTransition(() => setGameover(true));
+  };
 
   return (
     <FieldContext.Provider value={{ set, gameover, endGame, field }}>
@@ -112,6 +109,7 @@ export default function Minefield({ width, height, mines }: IMinefieldProps) {
 
   return (
     <FieldProvider width={width} height={height} mines={mines}>
+      <Counter />
       <div className="minefield" style={style}>
         <FieldGrid />
       </div>
