@@ -9,7 +9,6 @@ import {
 import Field from "../classes/Field";
 import Mine from "../classes/Mine";
 import { Random } from "../utils/Random";
-import Counter from "./Counter";
 import Tile from "./Tile";
 
 interface IMinefieldProps {
