@@ -75,13 +75,15 @@ function FieldProvider({
 
     callback.apply(mine);
 
-    for (const [x, y] of field.affected) {
+    field.affected.forEach(([x, y], index) => {
       const affected = field.at(x, y);
-      if (!affected) continue;
+      if (!affected) return;
       const updater = updaters.get(affected.id);
-      if (!updater) continue;
-      updater();
-    }
+      if (!updater) return;
+      setTimeout(() => {
+        updater();
+      }, 10 * index);
+    });
   };
 
   const endGame = () => {
@@ -100,8 +102,8 @@ export default function Minefield({ width, height, mines }: IMinefieldProps) {
   const style = useMemo(
     function generateTemplates() {
       return {
-        gridTemplateColumns: `repeat(${width}, 50px)`,
-        gridTemplateRows: ` repeat(${height}, 50px)`,
+        gridTemplateColumns: `repeat(${width}, var(--tile-size))`,
+        gridTemplateRows: ` repeat(${height}, var(--tile-size))`,
       };
     },
     [width, height]
@@ -109,7 +111,7 @@ export default function Minefield({ width, height, mines }: IMinefieldProps) {
 
   return (
     <FieldProvider width={width} height={height} mines={mines}>
-      <Counter />
+      {/* <Counter /> */}
       <div className="minefield" style={style}>
         <FieldGrid />
       </div>

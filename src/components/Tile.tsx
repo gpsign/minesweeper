@@ -44,8 +44,15 @@ export default function Tile({ x, y }: ITileProps) {
   })();
 
   const className = useMemo(() => {
-    return "mine-tile " + (opened ? "open" : "closed");
-  }, [opened]);
+    const base = ["mine-tile"];
+
+    if (opened) base.push("open");
+    else base.push("closed");
+
+    if (flagged) base.push("flagged");
+
+    return base.join(" ");
+  }, [opened, flagged]);
 
   const onClick = function openTile(e: React.MouseEvent) {
     e.stopPropagation();
@@ -73,7 +80,6 @@ export default function Tile({ x, y }: ITileProps) {
 
   return (
     <button
-      key={mine.status}
       disabled={gameover}
       onContextMenu={onContextMenu}
       onClick={onClick}
