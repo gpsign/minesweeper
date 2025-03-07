@@ -8,10 +8,9 @@ import {
 } from "react";
 import Field from "../classes/Field";
 import Mine from "../classes/Mine";
+import useUpdate from "../hooks/useUpdate";
 import { Random } from "../utils/Random";
 import Tile from "./Tile";
-import useUpdate from "../hooks/useUpdate";
-import { PositionSet } from "../classes/PositionSet";
 
 interface IMinefieldProps {
   width: number;
