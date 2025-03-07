@@ -1,8 +1,9 @@
 import { Random } from "../utils/Random";
 import Mine from "./Mine";
 import { PositionSet } from "./PositionSet";
+import Utils from "./Utils";
 
-type Position = [number, number];
+export type Position = [number, number];
 
 type FieldCopyConstructor = [Field];
 type FieldExplicitConstructor = [number, number, number];
@@ -65,7 +66,7 @@ export default class Field {
   }
 
   private placeMines() {
-    if (this.mines >= this.available.length - 9) throw "Sem espaço!";
+    if (this.mines >= this.available.length) throw "Sem espaço!";
 
     for (let i = 0; i < this.mines; i++) {
       const [x, y] = Random.pop(this.available);
@@ -117,19 +118,32 @@ export default class Field {
   }
 
   arround(x: number, y: number, callback: (this: Mine) => void) {
-    for (let i = -1; i <= 1; i++) {
-      for (let j = -1; j <= 1; j++) {
-        if (i === y && j === x) continue;
-        const cell = this.at(x + j, y + i);
-        if (!cell) continue;
-        callback.apply(cell);
-      }
-    }
+    Utils.around(x, y).forEach(([j, i]) => {
+      const cell = this.at(j, i);
+      if (!cell) return;
+      callback.apply(cell);
+    });
+  }
+
+  isOpen(x: number, y: number) {
+    const cell = this.at(x, y);
+    if (!cell) return false;
+    return cell.isOpen();
   }
 
   checkWin() {
     if (this.flagged.size !== this.answers.length) return false;
     return this.answers.every(([x, y]) => this.flagged.has(x, y));
+  }
+
+  reveal() {
+    this.affected = [];
+    for (const [x, y] of this.answers) {
+      const cell = this.at(x, y);
+      if (!cell) continue;
+      cell.open();
+      this.affected.push([x, y]);
+    }
   }
 
   get remaining() {

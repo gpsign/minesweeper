@@ -1,5 +1,18 @@
+@property --tile-size {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 25px;
+}
+
+@property --tile-radius {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 4px;
+}
+
 :root {
   --tile-size: 25px;
+  --tile-radius: 4px;
 }
 
 /* http://meyerweb.com/eric/tools/css/reset/ 

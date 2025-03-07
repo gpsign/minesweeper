@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import { useCallback } from "react";
+import { Position } from "../classes/Field";
 import Mine, { Status } from "../classes/Mine";
 import { Store } from "../classes/Store";
+import Utils from "../classes/Utils";
 import { useMine, useMineField } from "./Minefield";
 
 interface ITileProps {
@@ -43,16 +45,33 @@ export default function Tile({ x, y }: ITileProps) {
     );
   })();
 
-  const className = useMemo(() => {
+  const isOpenAt = useCallback(([x, y]: Position) => field.isOpen(x, y), []);
+
+  const className = Utils.fabricate(() => {
     const base = ["mine-tile"];
+
+    base.push("X-" + x);
+    base.push("Y-" + y);
 
     if (opened) base.push("open");
     else base.push("closed");
 
     if (flagged) base.push("flagged");
 
+    if (opened) return base.join(" ");
+
+    const topLeft = Utils.topLeft(x, y);
+    const topRight = Utils.topRight(x, y);
+    const bottomLeft = Utils.bottomLeft(x, y);
+    const bottomRight = Utils.bottomRight(x, y);
+
+    if (topLeft.every(isOpenAt)) base.push("tl");
+    if (topRight.every(isOpenAt)) base.push("tr");
+    if (bottomLeft.every(isOpenAt)) base.push("bl");
+    if (bottomRight.every(isOpenAt)) base.push("br");
+
     return base.join(" ");
-  }, [opened, flagged]);
+  });
 
   const onClick = function openTile(e: React.MouseEvent) {
     e.stopPropagation();

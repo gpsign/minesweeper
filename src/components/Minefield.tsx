@@ -10,6 +10,8 @@ import Field from "../classes/Field";
 import Mine from "../classes/Mine";
 import { Random } from "../utils/Random";
 import Tile from "./Tile";
+import useUpdate from "../hooks/useUpdate";
+import { PositionSet } from "../classes/PositionSet";
 
 interface IMinefieldProps {
   width: number;
@@ -42,13 +44,8 @@ export function useMineField() {
 const updaters = new Map<string, VoidFunction>();
 
 export function useMine(x: number, y: number) {
-  const [index, setIndex] = useState(0);
   const { field } = useMineField();
-  const update = () => {
-    setIndex(index + 1);
-  };
-
-  update.index = index;
+  const update = useUpdate();
 
   const mine = field.at(x, y) || new Mine(x, y, field);
   updaters.set(mine.id, update);
@@ -87,6 +84,15 @@ function FieldProvider({
 
   const endGame = () => {
     alert("BOOM! 💣");
+    field.reveal();
+    field.affected.forEach(([x, y]) => {
+      const affected = field.at(x, y);
+      if (!affected) return;
+      const updater = updaters.get(affected.id);
+      if (!updater) return;
+
+      updater();
+    });
     startTransition(() => setGameover(true));
   };
 

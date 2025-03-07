@@ -52,9 +52,11 @@ export default class Mine {
   }
 
   reveal() {
-    if (this.isOpen() || this.isFlagged() || this.isMine) return;
-
     this.field.affected.push([this.x, this.y]);
+    if (this.isOpen() || this.isFlagged() || this.isMine) {
+      if (this.isMine) console.log(this.x, this.y);
+      return;
+    }
 
     this.open();
 
