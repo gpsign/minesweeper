@@ -15,6 +15,23 @@ export default class Utils {
     return null;
   }
 
+  static clamp(value: number, min: number, max: number) {
+    if (max < min) [min, max] = [max, min];
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
+  static map(
+    val: number,
+    minA: number,
+    maxA: number,
+    minB: number,
+    maxB: number
+  ) {
+    return minB + ((val - minA) * (maxB - minB)) / (maxA - minA);
+  }
+
   static fabricate<T>(callback: () => T): T;
   static fabricate<T, C extends any, P extends Array<any>>(
     callback: (...params: P) => T,
