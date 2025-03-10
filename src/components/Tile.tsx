@@ -1,5 +1,5 @@
-import { useCallback } from "react";
-import { Position } from "../classes/Field";
+import { memo, useCallback } from "react";
+import Field, { Position } from "../classes/Field";
 import Mine, { Status } from "../classes/Mine";
 import { Store } from "../classes/Store";
 import Utils from "../classes/Utils";
@@ -23,8 +23,9 @@ const COLORS = [
   "black",
 ];
 
-export default function Tile({ x, y }: ITileProps) {
-  const { set, gameover, endGame, field } = useMineField();
+const Tile = memo(function Tile({ x, y }: ITileProps) {
+  const { set, gameover, endGame } = useMineField();
+  const field = Field.instance;
 
   const mine = useMine(x, y);
   const status = mine.status;
@@ -34,6 +35,7 @@ export default function Tile({ x, y }: ITileProps) {
   const isMine = mine.isMine;
 
   const display = (() => {
+    if (flagged && gameover) return "❌";
     if (flagged) return "🚩";
     if (!opened) return "";
     if (isMine) return "💣";
@@ -49,9 +51,6 @@ export default function Tile({ x, y }: ITileProps) {
 
   const className = Utils.fabricate(() => {
     const base = ["mine-tile"];
-
-    base.push("X-" + x);
-    base.push("Y-" + y);
 
     if (opened) base.push("open");
     else base.push("closed");
@@ -104,7 +103,76 @@ export default function Tile({ x, y }: ITileProps) {
       onClick={onClick}
       className={className}
     >
+      <Corner x={x} y={y} position="topLeft" />
+      <Corner x={x} y={y} position="topRight" />
       {display}
+      <Corner x={x} y={y} position="bottomLeft" />
+      <Corner x={x} y={y} position="bottomRight" />
     </button>
+  );
+});
+
+export default Tile;
+
+function getCorners(
+  x: number,
+  y: number,
+  position: `${"top" | "bottom"}${"Left" | "Right"}`
+): Position[] {
+  switch (position) {
+    case "topLeft":
+      return [
+        [x, y - 1],
+        [x - 1, y],
+      ];
+    case "topRight":
+      return [
+        [x, y - 1],
+        [x + 1, y],
+      ];
+    case "bottomLeft":
+      return [
+        [x - 1, y],
+        [x, y + 1],
+      ];
+    case "bottomRight":
+      return [
+        [x + 1, y],
+        [x, y + 1],
+      ];
+  }
+}
+
+function Corner({
+  position,
+  x,
+  y,
+}: {
+  position: `${"top" | "bottom"}${"Left" | "Right"}`;
+  x: number;
+  y: number;
+}) {
+  const field = Field.instance;
+
+  const isClosedAt = useCallback(
+    ([x, y]: Position) => field.isClosed(x, y),
+    []
+  );
+
+  const className = Utils.fabricate(() => {
+    const base = ["corner", Utils.normalize(position), "none"];
+
+    if (field.isClosed(x, y)) return base.join(" ");
+    const corners = getCorners(x, y, position);
+
+    if (corners.every(isClosedAt)) base.pop();
+
+    return base.join(" ");
+  });
+
+  return (
+    <span className={className}>
+      <span />
+    </span>
   );
 }

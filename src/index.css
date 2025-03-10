@@ -7,12 +7,26 @@
 @property --tile-radius {
   syntax: "<length>";
   inherits: false;
-  initial-value: 4px;
+  initial-value: 5px;
+}
+
+@property --tile-closed {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: "#7d7d7d";
+}
+
+@property --tile-open {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: "white";
 }
 
 :root {
   --tile-size: 25px;
-  --tile-radius: 4px;
+  --tile-radius: 5px;
+  --tile-closed: #7d7d7d;
+  --tile-open: white;
 }
 
 /* http://meyerweb.com/eric/tools/css/reset/ 

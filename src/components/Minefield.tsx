@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useMemo,
   useRef,
@@ -28,7 +29,6 @@ interface IFieldContext {
   set: SetMineFunction;
   gameover: boolean;
   endGame: VoidFunction;
-  field: Field;
 }
 
 const FieldContext = createContext<IFieldContext | null>(null);
@@ -43,7 +43,7 @@ export function useMineField() {
 const updaters = new Map<string, VoidFunction>();
 
 export function useMine(x: number, y: number) {
-  const { field } = useMineField();
+  const field = Field.instance;
   const update = useUpdate();
 
   const mine = field.at(x, y) || new Mine(x, y, field);
@@ -58,30 +58,37 @@ function FieldProvider({
   mines,
   children,
 }: IMinefieldProps & React.PropsWithChildren) {
-  const field = useRef(new Field(width, height, mines)).current;
+  Field.width = width;
+  Field.height = height;
+  Field.mines = mines;
+  const field = useRef(Field.instance).current;
 
   const [gameover, setGameover] = useState(false);
-  const [_isPending, startTransition] = useTransition();
 
-  const set: SetMineFunction = (x, y, callback) => {
-    field.affected = [];
-    const mine = field.at(x, y);
-    if (!mine) return;
+  const update = useUpdate();
 
-    callback.apply(mine);
+  const set: SetMineFunction = useCallback(
+    (x, y, callback) => {
+      field.affected = [];
+      const mine = field.at(x, y);
+      if (!mine) return;
 
-    field.affected.forEach(([x, y], index) => {
-      const affected = field.at(x, y);
-      if (!affected) return;
-      const updater = updaters.get(affected.id);
-      if (!updater) return;
-      setTimeout(() => {
-        updater();
-      }, 10 * index);
-    });
-  };
+      callback.apply(mine);
 
-  const endGame = () => {
+      field.affected.forEach(([x, y], index) => {
+        const affected = field.at(x, y);
+        if (!affected) return;
+        const updater = updaters.get(affected.id);
+        if (!updater) return;
+        setTimeout(() => {
+          updater();
+        }, 10 * index);
+      });
+    },
+    [update]
+  );
+
+  const endGame = useCallback(() => {
     alert("BOOM! 💣");
     field.reveal();
     field.affected.forEach(([x, y]) => {
@@ -92,11 +99,11 @@ function FieldProvider({
 
       updater();
     });
-    startTransition(() => setGameover(true));
-  };
+    setGameover(true);
+  }, []);
 
   return (
-    <FieldContext.Provider value={{ set, gameover, endGame, field }}>
+    <FieldContext.Provider value={{ set, gameover, endGame }}>
       {children}
     </FieldContext.Provider>
   );
@@ -124,7 +131,7 @@ export default function Minefield({ width, height, mines }: IMinefieldProps) {
 }
 
 function FieldGrid() {
-  const { field } = useMineField();
+  const field = Field.instance;
   return field.grid.map((line, y) =>
     line.map((mine, x) => (
       <Tile key={Random.uuid()} status={mine.status} x={x} y={y} />

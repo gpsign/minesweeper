@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Utils from "../classes/Utils";
 import useEventListener from "../hooks/useEventListener";
 
@@ -7,6 +7,7 @@ function Zoom({ children }: React.PropsWithChildren) {
   const [origin, setOrigin] = useState({ x: "50%", y: "50%" });
   const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef<HTMLElement | null>(null);
+  const lastPinchDistance = useRef<number | null>(null);
 
   const onMouseEnter = () => setIsHovering(true);
   const onMouseLeave = () => setIsHovering(false);
@@ -37,6 +38,57 @@ function Zoom({ children }: React.PropsWithChildren) {
     [zoom, isHovering],
     { passive: false }
   );
+
+  // Função para lidar com zoom no mobile (pinch-to-zoom)
+  const onTouchMove = useCallback(
+    (e: TouchEvent) => {
+      if (!containerRef.current || e.touches.length !== 2) return; // Só ativa com dois dedos
+
+      e.preventDefault();
+
+      const touch1 = e.touches[0];
+      const touch2 = e.touches[1];
+
+      // Calcula a distância entre os dois dedos
+      const pinchDistance = Math.hypot(
+        touch2.clientX - touch1.clientX,
+        touch2.clientY - touch1.clientY
+      );
+
+      if (lastPinchDistance.current !== null) {
+        const delta = pinchDistance - lastPinchDistance.current;
+        const newZoom = Math.max(0.5, Math.min(4, zoom + delta / 500)); // Ajuste do fator de zoom
+
+        if (newZoom !== zoom) {
+          const rect = containerRef.current.getBoundingClientRect();
+          const offsetX =
+            (((touch1.clientX + touch2.clientX) / 2 - rect.left) / rect.width) *
+            100;
+          const offsetY =
+            (((touch1.clientY + touch2.clientY) / 2 - rect.top) / rect.height) *
+            100;
+
+          setOrigin((prevOrigin) => ({
+            x: `${Number(prevOrigin.x.slice(0, -1)) * 0.7 + offsetX * 0.3}%`,
+            y: `${Number(prevOrigin.y.slice(0, -1)) * 0.7 + offsetY * 0.3}%`,
+          }));
+
+          setZoom(newZoom);
+        }
+      }
+
+      lastPinchDistance.current = pinchDistance;
+    },
+    [zoom]
+  );
+
+  // Reseta a distância ao soltar os dedos
+  const onTouchEnd = () => {
+    lastPinchDistance.current = null;
+  };
+
+  useEventListener("touchmove", onTouchMove, [], { passive: false });
+  useEventListener("touchend", onTouchEnd, []);
 
   const style = useMemo(
     () => ({

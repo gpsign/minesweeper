@@ -123,4 +123,8 @@ export default class Utils {
   static bottomRight(x: number, y: number): Position[] {
     return Utils.around(x, y, "right", "bottom");
   }
+
+  static normalize(str: string) {
+    return str.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+  }
 }

@@ -5,34 +5,25 @@ import Utils from "./Utils";
 
 export type Position = [number, number];
 
-type FieldCopyConstructor = [Field];
-type FieldExplicitConstructor = [number, number, number];
-type FieldConstructor = FieldCopyConstructor | FieldExplicitConstructor;
-
 export default class Field {
   grid: Mine[][];
+  static width: number;
+  static height: number;
+  static mines: number;
   width: number;
   height: number;
-  affected: Position[] = [];
   mines: number;
+  affected: Position[] = [];
   safeX: number;
   safeY: number;
   flagged: PositionSet = new PositionSet();
 
+  static #instance: Field;
+
   private available: Position[] = [];
   private answers: Position[] = [];
 
-  constructor(field: Field);
-  constructor(width: number, height: number, mines: number);
-  constructor(...args: FieldConstructor) {
-    const field = args[0];
-
-    if (this.isField(field)) {
-      Object.assign(this, { ...field });
-    }
-
-    const [width, height, mines] = args as FieldExplicitConstructor;
-
+  private constructor(width: number, height: number, mines: number) {
     this.grid ??= [];
     this.width ??= width;
     this.height ??= height;
@@ -52,8 +43,10 @@ export default class Field {
       }
   }
 
-  private isField(value: unknown): value is Field {
-    return value instanceof Field;
+  static get instance() {
+    if (Field.#instance) return Field.#instance;
+    Field.#instance = new Field(Field.width, Field.height, Field.mines);
+    return Field.#instance;
   }
 
   private isSafe(x: number, y: number) {
@@ -129,6 +122,10 @@ export default class Field {
     const cell = this.at(x, y);
     if (!cell) return false;
     return cell.isOpen();
+  }
+
+  isClosed(x: number, y: number) {
+    return !this.isOpen(x, y);
   }
 
   checkWin() {
