@@ -7,7 +7,7 @@ function Zoom({ children }: React.PropsWithChildren) {
   const [origin, setOrigin] = useState({ x: "50%", y: "50%" });
   const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef<HTMLElement | null>(null);
-  const lastPinchDistance = useRef<number | null>(null);
+  const _lastPinchDistance = useRef<number | null>(null);
 
   const onMouseEnter = () => setIsHovering(true);
   const onMouseLeave = () => setIsHovering(false);
