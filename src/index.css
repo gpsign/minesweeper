@@ -22,6 +22,20 @@
   initial-value: "white";
 }
 
+@font-face {
+  font-family: "Digital";
+  src: url("/public/fonts/digital-7/digital-7.ttf");
+}
+
+@font-face {
+  font-family: "Arcade";
+  src: url("/public/fonts/arcadeclassic/ARCADECLASSIC.TTF");
+}
+
+* {
+  user-select: none;
+}
+
 :root {
   --tile-size: 25px;
   --tile-radius: 5px;

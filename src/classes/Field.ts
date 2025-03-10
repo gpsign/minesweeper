@@ -52,6 +52,9 @@ export default class Field {
   private isSafe(x: number, y: number) {
     if (!this.atWidthBounds(x) || !this.atHeightBounds(y)) return false;
 
+    if (this.width <= 3 || this.height <= 3)
+      return this.safeX != x && this.safeY != y;
+
     const nearX = Boolean(x >= this.safeX - 1 && x <= this.safeX + 1);
     const nearY = Boolean(y >= this.safeY - 1 && y <= this.safeY + 1);
 
@@ -59,7 +62,7 @@ export default class Field {
   }
 
   private placeMines() {
-    if (this.mines >= this.available.length) throw "Sem espaço!";
+    if (this.mines > this.available.length) throw "Sem espaço!";
 
     for (let i = 0; i < this.mines; i++) {
       const [x, y] = Random.pop(this.available);
@@ -125,12 +128,24 @@ export default class Field {
   }
 
   isClosed(x: number, y: number) {
-    return !this.isOpen(x, y);
+    const cell = this.at(x, y);
+    if (!cell) return false;
+    return !cell.isOpen();
   }
 
   checkWin() {
     if (this.flagged.size !== this.answers.length) return false;
-    return this.answers.every(([x, y]) => this.flagged.has(x, y));
+    const allChecked = this.answers.every(([x, y]) => this.flagged.has(x, y));
+    if (!allChecked) return false;
+
+    for (const line of this.grid) {
+      for (const mine of line) {
+        if (mine.isMine) continue;
+        if (!mine.isOpen()) return false;
+      }
+    }
+
+    return true;
   }
 
   reveal() {
@@ -138,6 +153,7 @@ export default class Field {
     for (const [x, y] of this.answers) {
       const cell = this.at(x, y);
       if (!cell) continue;
+      if (cell.isFlagged()) continue;
       cell.open();
       this.affected.push([x, y]);
     }

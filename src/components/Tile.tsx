@@ -35,7 +35,7 @@ const Tile = memo(function Tile({ x, y }: ITileProps) {
   const isMine = mine.isMine;
 
   const display = (() => {
-    if (flagged && gameover) return "❌";
+    if (flagged && gameover && !isMine) return "❌";
     if (flagged) return "🚩";
     if (!opened) return "";
     if (isMine) return "💣";
@@ -93,7 +93,7 @@ const Tile = memo(function Tile({ x, y }: ITileProps) {
     if (opened) return;
 
     set(x, y, mine.flag);
-    Store.set("counter", field.remaining);
+    Store.set("remaining", field.remaining);
   };
 
   return (

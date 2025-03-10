@@ -3,5 +3,9 @@ import useStore from "../hooks/useStore";
 export default function Counter() {
   const store = useStore();
 
-  return <>{store.get("remaining", 0)}</>;
+  return (
+    <h1 className="counter">
+      {String(store.get<number>("remaining", 0)).padStart(2, "0")}
+    </h1>
+  );
 }

@@ -2,16 +2,19 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
-  useTransition,
 } from "react";
 import Field from "../classes/Field";
 import Mine from "../classes/Mine";
+import { Store } from "../classes/Store";
 import useUpdate from "../hooks/useUpdate";
 import { Random } from "../utils/Random";
+import Counter from "./Counter";
 import Tile from "./Tile";
+import Timer from "./Timer";
 
 interface IMinefieldProps {
   width: number;
@@ -64,7 +67,6 @@ function FieldProvider({
   const field = useRef(Field.instance).current;
 
   const [gameover, setGameover] = useState(false);
-
   const update = useUpdate();
 
   const set: SetMineFunction = useCallback(
@@ -74,19 +76,32 @@ function FieldProvider({
       if (!mine) return;
 
       callback.apply(mine);
+      update();
 
-      field.affected.forEach(([x, y], index) => {
-        const affected = field.at(x, y);
-        if (!affected) return;
-        const updater = updaters.get(affected.id);
-        if (!updater) return;
-        setTimeout(() => {
-          updater();
-        }, 10 * index);
-      });
+      if (field.checkWin()) {
+        alert("Voce Ganhou!");
+        setGameover(true);
+      }
+
+      /* TODO */
+      // Transicao de onda
+      // field.affected.forEach(([x, y], index) => {
+      //   const affected = field.at(x, y);
+      //   if (!affected) return;
+      //   const updater = updaters.get(affected.id);
+      //   if (!updater) return;
+      //   setTimeout(() => {
+      //     updater();
+      //   }, 10 * index);
+      // });
     },
     [update]
   );
+
+  useEffect(() => {
+    if (!gameover) return;
+    Store.set("endgame", true);
+  }, [gameover]);
 
   const endGame = useCallback(() => {
     alert("BOOM! 💣");
@@ -122,7 +137,10 @@ export default function Minefield({ width, height, mines }: IMinefieldProps) {
 
   return (
     <FieldProvider width={width} height={height} mines={mines}>
-      {/* <Counter /> */}
+      <header className="monitor">
+        <Counter />
+        <Timer />
+      </header>
       <div className="minefield" style={style}>
         <FieldGrid />
       </div>
