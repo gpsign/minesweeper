@@ -1,13 +1,13 @@
 import { useMemo, useRef, useState } from "react";
-import Utils from "../classes/Utils";
 import useEventListener from "../hooks/useEventListener";
+import Utils from "../utils/Utils";
 
 function Zoom({ children }: React.PropsWithChildren) {
   const [zoom, setZoom] = useState(1);
   const [origin, setOrigin] = useState({ x: "50%", y: "50%" });
   const [isHovering, setIsHovering] = useState(false);
   const containerRef = useRef<HTMLElement | null>(null);
-//  const _lastPinchDistance = useRef<number | null>(null);
+  //  const _lastPinchDistance = useRef<number | null>(null);
 
   const onMouseEnter = () => setIsHovering(true);
   const onMouseLeave = () => setIsHovering(false);
@@ -20,7 +20,11 @@ function Zoom({ children }: React.PropsWithChildren) {
 
       e.preventDefault();
 
-      const newZoom = Utils.clamp(zoom + Math.fround(e.deltaY / -1000), 0.5, 4);
+      const newZoom = Utils.number.clamp(
+        zoom + Math.fround(e.deltaY / -1000),
+        0.5,
+        4
+      );
 
       if (newZoom === zoom) return;
 

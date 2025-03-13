@@ -1,8 +1,9 @@
 import { memo, useCallback } from "react";
-import Field, { Position } from "../classes/Field";
+import Field from "../classes/Field";
 import Mine, { Status } from "../classes/Mine";
+import Position, { Horizontal, Vertical } from "../classes/Position";
 import { Store } from "../classes/Store";
-import Utils from "../classes/Utils";
+import Utils from "../utils/Utils";
 import { useMine, useMineField } from "./Minefield";
 
 interface ITileProps {
@@ -59,10 +60,10 @@ const Tile = memo(function Tile({ x, y }: ITileProps) {
 
     if (opened) return base.join(" ");
 
-    const topLeft = Utils.topLeft(x, y);
-    const topRight = Utils.topRight(x, y);
-    const bottomLeft = Utils.bottomLeft(x, y);
-    const bottomRight = Utils.bottomRight(x, y);
+    const topLeft = Utils.grid.corner(x, y, "top", "left");
+    const topRight = Utils.grid.corner(x, y, "top", "right");
+    const bottomLeft = Utils.grid.corner(x, y, "bottom", "left");
+    const bottomRight = Utils.grid.corner(x, y, "bottom", "right");
 
     if (topLeft.every(isOpenAt)) base.push("tl");
     if (topRight.every(isOpenAt)) base.push("tr");
@@ -103,52 +104,25 @@ const Tile = memo(function Tile({ x, y }: ITileProps) {
       onClick={onClick}
       className={className}
     >
-      <Corner x={x} y={y} position="topLeft" />
-      <Corner x={x} y={y} position="topRight" />
+      <Corner x={x} y={y} vertical="top" horizontal="left" />
+      <Corner x={x} y={y} vertical="top" horizontal="right" />
       {display}
-      <Corner x={x} y={y} position="bottomLeft" />
-      <Corner x={x} y={y} position="bottomRight" />
+      <Corner x={x} y={y} vertical="bottom" horizontal="left" />
+      <Corner x={x} y={y} vertical="bottom" horizontal="right" />
     </button>
   );
 });
 
 export default Tile;
 
-function getCorners(
-  x: number,
-  y: number,
-  position: `${"top" | "bottom"}${"Left" | "Right"}`
-): Position[] {
-  switch (position) {
-    case "topLeft":
-      return [
-        [x, y - 1],
-        [x - 1, y],
-      ];
-    case "topRight":
-      return [
-        [x, y - 1],
-        [x + 1, y],
-      ];
-    case "bottomLeft":
-      return [
-        [x - 1, y],
-        [x, y + 1],
-      ];
-    case "bottomRight":
-      return [
-        [x + 1, y],
-        [x, y + 1],
-      ];
-  }
-}
-
 function Corner({
-  position,
+  vertical,
+  horizontal,
   x,
   y,
 }: {
-  position: `${"top" | "bottom"}${"Left" | "Right"}`;
+  vertical: Vertical;
+  horizontal: Horizontal;
   x: number;
   y: number;
 }) {
@@ -160,10 +134,10 @@ function Corner({
   );
 
   const className = Utils.fabricate(() => {
-    const base = ["corner", Utils.normalize(position), "none"];
+    const base = ["corner", horizontal, vertical, "none"];
 
     if (field.isClosed(x, y)) return base.join(" ");
-    const corners = getCorners(x, y, position);
+    const corners = [Position[vertical](x, y), Position[horizontal](x, y)];
 
     if (corners.every(isClosedAt)) base.pop();
 

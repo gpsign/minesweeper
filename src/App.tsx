@@ -1,8 +1,8 @@
 import "./App.css";
 import { Store } from "./classes/Store";
-import Utils from "./classes/Utils";
 import Minefield from "./components/Minefield";
 import Zoom from "./components/Zoom";
+import Utils from "./utils/Utils";
 
 const WIDTH = Utils.nvv(16, Math.floor(window.innerWidth / 100))!;
 const HEIGHT = Utils.nvv(30, Math.floor(window.innerHeight / 100))!;

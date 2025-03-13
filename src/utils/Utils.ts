@@ -1,4 +1,6 @@
-import { Position } from "./Field";
+import GridUtils from "./GridUtils";
+import NumberUtils from "./NumberUtils";
+import StringUtils from "./StringUtils";
 
 type FabricateArgs<T, C extends Object, P extends Array<any>> =
   | [callback: () => T]
@@ -7,29 +9,16 @@ type FabricateArgs<T, C extends Object, P extends Array<any>> =
   | [context: C, callback: (this: C, ...args: P) => T, args: P];
 
 export default class Utils {
+  static number = NumberUtils;
+  static string = StringUtils;
+  static grid = GridUtils;
+
   static nvv<T>(...values: Array<T | undefined | null>): T | null {
     for (const value of values) {
       if (value === undefined || value === null) continue;
       return value;
     }
     return null;
-  }
-
-  static clamp(value: number, min: number, max: number) {
-    if (max < min) [min, max] = [max, min];
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-  }
-
-  static map(
-    val: number,
-    minA: number,
-    maxA: number,
-    minB: number,
-    maxB: number
-  ) {
-    return minB + ((val - minA) * (maxB - minB)) / (maxA - minA);
   }
 
   static fabricate<T>(callback: () => T): T;
@@ -80,51 +69,14 @@ export default class Utils {
     return callback();
   }
 
-  static around(
-    x: number,
-    y: number,
-    horizontal?: "left" | "right",
-    vertical?: "top" | "bottom"
-  ): Position[] {
-    const [vMin, vMax] = Utils.fabricate(() => {
-      if (!vertical) return [-1, 1];
-      if (vertical === "top") return [-1, 0];
-      return [0, 1];
+  static applyMixins<T>(derivedCtor: any, baseCtors: any[]): T {
+    baseCtors.forEach((baseCtor) => {
+      Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
+        if (name !== "constructor") {
+          derivedCtor.prototype[name] = baseCtor.prototype[name];
+        }
+      });
     });
-
-    const [hMin, hMax] = Utils.fabricate(() => {
-      if (!horizontal) return [-1, 1];
-      if (horizontal === "left") return [-1, 0];
-      return [0, 1];
-    });
-
-    const coordinates: Position[] = [];
-    for (let i = vMin; i <= vMax; i++) {
-      for (let j = hMin; j <= hMax; j++) {
-        if (i === 0 && j === 0) continue;
-        coordinates.push([x + j, y + i]);
-      }
-    }
-    return coordinates;
-  }
-
-  static topLeft(x: number, y: number): Position[] {
-    return Utils.around(x, y, "left", "top");
-  }
-
-  static topRight(x: number, y: number): Position[] {
-    return Utils.around(x, y, "right", "top");
-  }
-
-  static bottomLeft(x: number, y: number): Position[] {
-    return Utils.around(x, y, "left", "bottom");
-  }
-
-  static bottomRight(x: number, y: number): Position[] {
-    return Utils.around(x, y, "right", "bottom");
-  }
-
-  static normalize(str: string) {
-    return str.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+    return derivedCtor;
   }
 }
