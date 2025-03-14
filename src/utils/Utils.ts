@@ -13,6 +13,8 @@ export default class Utils {
   static string = StringUtils;
   static grid = GridUtils;
 
+  static noop(..._args: unknown[]): void {}
+
   static nvv<T>(...values: Array<T | undefined | null>): T | null {
     for (const value of values) {
       if (value === undefined || value === null) continue;
