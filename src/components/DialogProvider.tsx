@@ -4,6 +4,7 @@ import {
   memo,
   PropsWithChildren,
   useCallback,
+  useContext,
   useState,
 } from "react";
 import {
@@ -11,66 +12,83 @@ import {
   DialogID,
   IDialogControls,
 } from "../context/DialogControlsContext";
-import useDialogControls from "../hooks/useDialogControls";
 
-const DialogContext = createContext<
-  IDialogControls & { id: DialogID; close: VoidFunction }
->({
-  close() {},
-  open(_component) {
-    return 0;
-  },
-  id: 0,
-});
+enum DialogStatus {
+  open,
+  closed,
+}
 
-const Dialog = memo(function Dialog({
-  Component,
-  id,
-}: {
-  Component: FunctionComponent;
+interface IDialog<T = any> {
+  status: DialogStatus;
   id: DialogID;
-}) {
-  const controls = useDialogControls();
+  Component: FunctionComponent;
+  confirm: (value: T) => void;
+  close: VoidFunction;
+}
 
-  const close = useCallback(() => controls.close(id), [controls]);
+const DialogDataContext = createContext<IDialog | null>(null);
 
+const Dialog = memo(function Dialog({ dialog }: { dialog: IDialog }) {
   return (
-    <DialogContext.Provider value={{ ...controls, close, id }}>
-      <Component />
-    </DialogContext.Provider>
+    <DialogDataContext.Provider value={{ ...dialog }}>
+      <div className="dialog-background" style={{ zIndex: dialog.id }}>
+        <dialog open={dialog.status === DialogStatus.open}>
+          <dialog.Component />
+        </dialog>
+      </div>
+    </DialogDataContext.Provider>
   );
 });
 
+export function useDialogData() {
+  const data = useContext(DialogDataContext);
+  if (data === null) throw "Deve ser usado em um Dialog!";
+  return data;
+}
+
 export default function DialogProvider({ children }: PropsWithChildren) {
-  const [components, setComponents] = useState<
-    Map<DialogID, FunctionComponent>
-  >(new Map());
+  const [dialogs, setDialogs] = useState<Map<DialogID, IDialog>>(new Map());
 
   const open = useCallback<IDialogControls["open"]>(
     (component: FunctionComponent) => {
-      const id = Date.now() as DialogID;
+      return new Promise((resolve) => {
+        const id = Date.now() as DialogID;
 
-      components.set(id, component);
+        const dialog: IDialog = {
+          Component: component,
+          id,
+          status: DialogStatus.open,
+          close: () => {
+            resolve(null);
+            close(id);
+          },
+          confirm: (value: any) => {
+            resolve(value);
+            close(id);
+          },
+        };
 
-      setComponents(new Map(components));
-      return id;
+        dialogs.set(id, dialog);
+
+        setDialogs(new Map(dialogs));
+      });
     },
-    [setComponents, components]
+    [setDialogs, dialogs]
   );
 
   const close = useCallback<IDialogControls["close"]>(
     (id) => {
-      components.delete(id);
-      setComponents(new Map(components));
+      dialogs.delete(id);
+      setDialogs(new Map(dialogs));
     },
-    [setComponents, components]
+    [setDialogs, dialogs]
   );
 
   return (
     <DialogControlsContext.Provider value={{ close, open }}>
       {children}
-      {Array.from(components.entries()).map(([id, component]) => (
-        <Dialog Component={component} id={id} key={id} />
+      {Array.from(dialogs.entries()).map(([id, dialog]) => (
+        <Dialog dialog={dialog} key={id} />
       ))}
     </DialogControlsContext.Provider>
   );
