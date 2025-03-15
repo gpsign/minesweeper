@@ -1,9 +1,8 @@
 import { Random } from "../utils/Random";
+import Utils from "../utils/Utils";
 import Mine from "./Mine";
+import Position from "./Position";
 import { PositionSet } from "./PositionSet";
-import Utils from "./Utils";
-
-export type Position = [number, number];
 
 export default class Field {
   grid: Mine[][];
@@ -70,7 +69,7 @@ export default class Field {
       if (!cell) continue;
       cell.isMine = true;
       this.arround(x, y, Mine.prototype.increment);
-      this.answers.push([x, y]);
+      this.answers.push(new Position([x, y]));
     }
   }
 
@@ -87,7 +86,7 @@ export default class Field {
     for (let y = 0; y < this.height; y++) {
       for (let x = 0; x < this.width; x++) {
         if (!this.isSafe(x, y)) continue;
-        this.available.push([x, y]);
+        this.available.push(new Position([x, y]));
       }
     }
     this.placeMines();
@@ -114,7 +113,7 @@ export default class Field {
   }
 
   arround(x: number, y: number, callback: (this: Mine) => void) {
-    Utils.around(x, y).forEach(([j, i]) => {
+    Utils.grid.around(x, y).forEach(([j, i]) => {
       const cell = this.at(j, i);
       if (!cell) return;
       callback.apply(cell);
@@ -155,7 +154,7 @@ export default class Field {
       if (!cell) continue;
       if (cell.isFlagged()) continue;
       cell.open();
-      this.affected.push([x, y]);
+      this.affected.push(new Position([x, y]));
     }
   }
 

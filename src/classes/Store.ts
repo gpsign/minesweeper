@@ -1,5 +1,5 @@
 import { UpdateFunction } from "../hooks/useUpdate";
-import Utils from "./Utils";
+import Utils from "../utils/Utils";
 
 interface UpdaterRecord {
   [key: string]: UpdateFunction;

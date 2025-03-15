@@ -1,5 +1,6 @@
 import { Random } from "../utils/Random";
 import Field from "./Field";
+import Position from "./Position";
 
 export enum Status {
   open,
@@ -40,7 +41,7 @@ export default class Mine {
 
     this.field.flagged[method](this.x, this.y);
 
-    this.field.affected.push([this.x, this.y]);
+    this.field.affected.push(new Position([this.x, this.y]));
   }
 
   open() {
@@ -52,9 +53,8 @@ export default class Mine {
   }
 
   reveal() {
-    this.field.affected.push([this.x, this.y]);
+    this.field.affected.push(new Position([this.x, this.y]));
     if (this.isOpen() || this.isFlagged() || this.isMine) {
-      if (this.isMine) console.log(this.x, this.y);
       return;
     }
 
