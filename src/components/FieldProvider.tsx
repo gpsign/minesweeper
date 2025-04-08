@@ -9,6 +9,8 @@ import {
 import useUpdate from "../hooks/useUpdate";
 import { Store } from "../classes/Store";
 import { updaters } from "../hooks/useMine";
+import { useDialogData } from "../hooks/useDialogData";
+import useDialogControls from "../hooks/useDialogControls";
 
 export default function FieldProvider({
   width,
@@ -23,6 +25,7 @@ export default function FieldProvider({
 
   const [gameover, setGameover] = useState(false);
   const update = useUpdate();
+  const { open } = useDialogControls();
 
   const set: SetMineFunction = useCallback(
     (x, y, callback) => {
@@ -47,7 +50,7 @@ export default function FieldProvider({
   }, [gameover]);
 
   const endGame = useCallback(() => {
-    alert("BOOM! 💣");
+    open(GameoverDialog);
     field.reveal();
     field.affected.forEach(([x, y]) => {
       const affected = field.at(x, y);
@@ -64,5 +67,16 @@ export default function FieldProvider({
     <FieldContext.Provider value={{ set, gameover, endGame }}>
       {children}
     </FieldContext.Provider>
+  );
+}
+
+function GameoverDialog() {
+  const { close } = useDialogData();
+
+  return (
+    <div>
+      "BOOM! 💣"
+      <button onClick={close}>OK</button>
+    </div>
   );
 }
