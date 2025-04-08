@@ -1,5 +1,6 @@
 // import { Position } from "../classes/Field";
 import Position, { Horizontal, Vertical } from "../classes/Position";
+import { PositionSet } from "../classes/PositionSet";
 
 export default class GridUtils {
   static around(x: number, y: number): Position[] {
@@ -14,7 +15,13 @@ export default class GridUtils {
     const bl = Position.left(bottom);
     const br = Position.right(bottom);
 
-    return [tl, top, tr, left, right, bl, bottom, br];
+    const set = new PositionSet();
+
+    return [tl, top, tr, left, right, bl, bottom, br].filter(([x, y]) => {
+      if (set.has(x, y)) return false;
+      set.add(x, y);
+      return true;
+    });
   }
 
   static corner(
