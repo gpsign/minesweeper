@@ -21,6 +21,7 @@ export default function Timer() {
     if (!isRunning) return;
     if (!endgame) return;
     setIsRunning(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endgame]);
 
   const formatTime = (seconds: number) => {

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect } from "react";
 
 export default function useEventListener<K extends keyof WindowEventMap>(

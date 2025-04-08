@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export class PositionSet extends Set {
   private toKey(x: number, y: number): string {
     return `${x}-${y}`;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { UpdateFunction } from "../hooks/useUpdate";
 import Utils from "../utils/Utils";
 

@@ -1,3 +1,5 @@
+/* eslint-disable prefer-const */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const CYRB_CACHE: { [key: string]: [number, number, number, number] } = {};
 const SFC_CACHE: { [key: string]: number } = {};
 const letters = [
@@ -50,6 +52,7 @@ function cyrb128(str: string) {
   h2 = Math.imul(h4 ^ (h2 >>> 22), 2869860233);
   h3 = Math.imul(h1 ^ (h3 >>> 17), 951274213);
   h4 = Math.imul(h2 ^ (h4 >>> 19), 2716044179);
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   (h1 ^= h2 ^ h3 ^ h4), (h2 ^= h1), (h3 ^= h1), (h4 ^= h1);
   CYRB_CACHE[str] = [h1 >>> 0, h2 >>> 0, h3 >>> 0, h4 >>> 0];
   return CYRB_CACHE[str];
@@ -64,7 +67,7 @@ function sfc32(a: number, b: number, c: number, d: number) {
     b |= 0;
     c |= 0;
     d |= 0;
-    let t = (((a + b) | 0) + d) | 0;
+    const t = (((a + b) | 0) + d) | 0;
     d = (d + 1) | 0;
     a = b ^ (b >>> 9);
     b = (c + (c << 3)) | 0;

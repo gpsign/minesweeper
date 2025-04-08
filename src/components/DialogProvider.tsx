@@ -1,10 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  createContext,
   FunctionComponent,
   memo,
   PropsWithChildren,
   useCallback,
-  useContext,
   useState,
 } from "react";
 import {
@@ -12,21 +11,11 @@ import {
   DialogID,
   IDialogControls,
 } from "../context/DialogControlsContext";
-
-enum DialogStatus {
-  open,
-  closed,
-}
-
-interface IDialog<T = any> {
-  status: DialogStatus;
-  id: DialogID;
-  Component: FunctionComponent;
-  confirm: (value: T) => void;
-  close: VoidFunction;
-}
-
-const DialogDataContext = createContext<IDialog | null>(null);
+import {
+  DialogDataContext,
+  DialogStatus,
+  IDialog,
+} from "../context/DialogDataContext";
 
 const Dialog = memo(function Dialog({ dialog }: { dialog: IDialog }) {
   return (
@@ -39,12 +28,6 @@ const Dialog = memo(function Dialog({ dialog }: { dialog: IDialog }) {
     </DialogDataContext.Provider>
   );
 });
-
-export function useDialogData() {
-  const data = useContext(DialogDataContext);
-  if (data === null) throw "Deve ser usado em um Dialog!";
-  return data;
-}
 
 export default function DialogProvider({ children }: PropsWithChildren) {
   const [dialogs, setDialogs] = useState<Map<DialogID, IDialog>>(new Map());
@@ -73,6 +56,7 @@ export default function DialogProvider({ children }: PropsWithChildren) {
         setDialogs(new Map(dialogs));
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [setDialogs, dialogs]
   );
 

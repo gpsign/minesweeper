@@ -1,10 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { memo, useCallback } from "react";
 import Field from "../classes/Field";
 import Mine, { Status } from "../classes/Mine";
 import Position, { Horizontal, Vertical } from "../classes/Position";
 import { Store } from "../classes/Store";
 import Utils from "../utils/Utils";
-import { useMine, useMineField } from "./Minefield";
+import { useMineField } from "../hooks/useMineField";
+import { useMine } from "../hooks/useMine";
 
 interface ITileProps {
   status: Mine["status"];

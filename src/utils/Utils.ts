@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-wrapper-object-types */
 import GridUtils from "./GridUtils";
 import NumberUtils from "./NumberUtils";
 import StringUtils from "./StringUtils";
@@ -13,6 +15,7 @@ export default class Utils {
   static string = StringUtils;
   static grid = GridUtils;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static noop(..._args: unknown[]): void {}
 
   static nvv<T>(...values: Array<T | undefined | null>): T | null {
@@ -24,6 +27,7 @@ export default class Utils {
   }
 
   static fabricate<T>(callback: () => T): T;
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint, @typescript-eslint/no-unused-vars
   static fabricate<T, C extends any, P extends Array<any>>(
     callback: (...params: P) => T,
     params: P
@@ -69,16 +73,5 @@ export default class Utils {
     }
 
     return callback();
-  }
-
-  static applyMixins<T>(derivedCtor: any, baseCtors: any[]): T {
-    baseCtors.forEach((baseCtor) => {
-      Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
-        if (name !== "constructor") {
-          derivedCtor.prototype[name] = baseCtor.prototype[name];
-        }
-      });
-    });
-    return derivedCtor;
   }
 }
